@@ -265,6 +265,47 @@ SK_STDMETHODIMP StreamFontCollectionLoader::CreateEnumeratorFromKey(
 
 ////////////////////////////////////////////////////////////////////////////////
 
+namespace {
+
+// Iterate calls to GetFirstMatchingFont incrementally removing bold or italic
+// styling that can trigger the simulations. Implementing it this way gets us a
+// IDWriteFont that can be used as before and has the correct information on its
+// own style. Stripping simulations from IDWriteFontFace is possible via
+// IDWriteFontList1, IDWriteFontFaceReference and CreateFontFace, but this way
+// we won't have a matching IDWriteFont which is still used in get_style().
+HRESULT FirstMatchingFontWithoutSimulations(const SkTScopedComPtr<IDWriteFontFamily>& family,
+                                            DWriteStyle dwStyle,
+                                            SkTScopedComPtr<IDWriteFont>& font) {
+    bool noSimulations = false;
+    while (!noSimulations) {
+        SkTScopedComPtr<IDWriteFont> searchFont;
+        HR(family->GetFirstMatchingFont(
+                dwStyle.fWeight, dwStyle.fWidth, dwStyle.fSlant, &searchFont));
+        DWRITE_FONT_SIMULATIONS simulations = searchFont->GetSimulations();
+        // If we still get simulations even though we're not asking for bold or
+        // italic, we can't help it and exit the loop.
+        noSimulations = simulations == DWRITE_FONT_SIMULATIONS_NONE ||
+                        (dwStyle.fWeight == DWRITE_FONT_WEIGHT_REGULAR &&
+                         dwStyle.fSlant == DWRITE_FONT_STYLE_NORMAL);
+        if (noSimulations) {
+            font = std::move(searchFont);
+            break;
+        }
+        if (simulations & DWRITE_FONT_SIMULATIONS_BOLD) {
+            dwStyle.fWeight = DWRITE_FONT_WEIGHT_REGULAR;
+            continue;
+        }
+        if (simulations & DWRITE_FONT_SIMULATIONS_OBLIQUE) {
+            dwStyle.fSlant = DWRITE_FONT_STYLE_NORMAL;
+            continue;
+        }
+    }
+    return S_OK;
+}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 class SkFontMgr_DirectWrite : public SkFontMgr {
 public:
     /** localeNameLength and defaultFamilyNameLength must include the null terminator. */
@@ -1060,8 +1101,8 @@ sk_sp<SkTypeface> SkFontMgr_DirectWrite::onLegacyMakeTypeface(const char familyN
     }
 
     SkTScopedComPtr<IDWriteFont> font;
-    HRNM(fontFamily->GetFirstMatchingFont(dwStyle.fWeight, dwStyle.fWidth, dwStyle.fSlant, &font),
-         "Could not get matching font.");
+    HRNM(FirstMatchingFontWithoutSimulations(fontFamily, dwStyle, font),
+         "No font found from family.");
 
     SkTScopedComPtr<IDWriteFontFace> fontFace;
     HRNM(font->CreateFontFace(&fontFace), "Could not create font face.");
@@ -1104,9 +1145,9 @@ void SkFontStyleSet_DirectWrite::getStyle(int index, SkFontStyle* fs, SkString* 
 SkTypeface* SkFontStyleSet_DirectWrite::matchStyle(const SkFontStyle& pattern) {
     SkTScopedComPtr<IDWriteFont> font;
     DWriteStyle dwStyle(pattern);
-    // TODO: perhaps use GetMatchingFonts and get the least simulated?
-    HRNM(fFontFamily->GetFirstMatchingFont(dwStyle.fWeight, dwStyle.fWidth, dwStyle.fSlant, &font),
-         "Could not match font in family.");
+
+    HRNM(FirstMatchingFontWithoutSimulations(fFontFamily, dwStyle, font),
+         "No font found from family.");
 
     SkTScopedComPtr<IDWriteFontFace> fontFace;
     HRNM(font->CreateFontFace(&fontFace), "Could not create font face.");
