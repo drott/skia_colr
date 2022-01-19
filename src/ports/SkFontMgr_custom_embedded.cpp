@@ -87,8 +87,8 @@ static void load_font_from_data(const SkTypeface_FreeType::Scanner& scanner,
         bool isFixedPitch;
         SkString realname;
         SkFontStyle style = SkFontStyle(); // avoid uninitialized warning
-        if (!scanner.scanFont(stream.get(), faceIndex,
-                              &realname, &style, &isFixedPitch, nullptr))
+        if (!scanner.scanFont(stream.get(), faceIndex, 0,
+                              &realname, &style, &isFixedPitch, nullptr, nullptr))
         {
             SkDebugf("---- failed to open <%d> <%d> as a font\n", index, faceIndex);
             return;
@@ -99,7 +99,8 @@ static void load_font_from_data(const SkTypeface_FreeType::Scanner& scanner,
             addTo = new SkFontStyleSet_Custom(realname);
             families->push_back().reset(addTo);
         }
-        auto data = std::make_unique<SkFontData>(stream->duplicate(), faceIndex, nullptr, 0);
+        auto data = std::make_unique<SkFontData>(stream->duplicate(), faceIndex, nullptr, 0,
+                                                 nullptr, 0);
         addTo->appendTypeface(sk_make_sp<SkTypeface_Stream>(std::move(data),
                                                             style, isFixedPitch,
                                                             true, realname));

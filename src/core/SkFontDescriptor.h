@@ -18,20 +18,32 @@
 class SkFontData {
 public:
     /** Makes a copy of the data in 'axis'. */
-    SkFontData(std::unique_ptr<SkStreamAsset> stream, int index, const SkFixed* axis, int axisCount)
-        : fStream(std::move(stream)), fIndex(index), fAxisCount(axisCount), fAxis(axisCount)
+     SkFontData(std::unique_ptr<SkStreamAsset> stream, int index, const SkFixed* axis, int axisCount,
+                const SkColor* palette, int paletteEntryCount)
+        : fStream(std::move(stream)), fIndex(index)
+        , fAxisCount(axisCount), fAxis(axisCount)
     {
         for (int i = 0; i < axisCount; ++i) {
             fAxis[i] = axis[i];
         }
+        fPalette.reset(paletteEntryCount);
+        for (int i = 0; i < paletteEntryCount; ++i) {
+            fPalette[i] = palette[i];
+        }
     }
+
+    // TODO: We might need to put a fully resolved palette in SkFontArguments instead.
     SkFontData(std::unique_ptr<SkStreamAsset> stream, SkFontArguments args)
         : fStream(std::move(stream)), fIndex(args.getCollectionIndex())
         , fAxisCount(args.getVariationDesignPosition().coordinateCount)
         , fAxis(args.getVariationDesignPosition().coordinateCount)
+        , fPalette(args.getPaletteOverride().colorOverrideCount)
     {
         for (int i = 0; i < fAxisCount; ++i) {
             fAxis[i] = SkFloatToFixed(args.getVariationDesignPosition().coordinates[i].value);
+        }
+        for (size_t j = 0; j < fPalette.size(); ++j) {
+            fPalette[j] = 0;
         }
     }
     SkFontData(const SkFontData& that)
@@ -39,9 +51,13 @@ public:
         , fIndex(that.fIndex)
         , fAxisCount(that.fAxisCount)
         , fAxis(fAxisCount)
+        , fPalette(that.fPalette.size())
     {
         for (int i = 0; i < fAxisCount; ++i) {
             fAxis[i] = that.fAxis[i];
+        }
+        for (size_t j = 0; j < that.fPalette.size(); ++j) {
+            fPalette[j] = that.fPalette[j];
         }
     }
     bool hasStream() const { return fStream != nullptr; }
@@ -51,12 +67,15 @@ public:
     int getIndex() const { return fIndex; }
     int getAxisCount() const { return fAxisCount; }
     const SkFixed* getAxis() const { return fAxis.get(); }
+    int getPaletteEntryCount() const { return fPalette.size(); }
+    const SkColor* getPalette() const { return fPalette.get(); }
 
 private:
     std::unique_ptr<SkStreamAsset> fStream;
     int fIndex;
     int fAxisCount;
     SkAutoSTMalloc<4, SkFixed> fAxis;
+    SkAutoSTArray<1, SkColor> fPalette;
 };
 
 class SkFontDescriptor : SkNoncopyable {

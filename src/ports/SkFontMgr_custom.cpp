@@ -120,7 +120,7 @@ std::unique_ptr<SkFontData> SkTypeface_File::onMakeFontData() const {
     if (!stream) {
         return nullptr;
     }
-    return std::make_unique<SkFontData>(std::move(stream), index, nullptr, 0);
+    return std::make_unique<SkFontData>(std::move(stream), index, nullptr, 0, nullptr, 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -239,9 +239,11 @@ sk_sp<SkTypeface> SkFontMgr_Custom::onMakeFromStreamArgs(std::unique_ptr<SkStrea
     SkFontStyle style;
     SkString name;
     Scanner::AxisDefinitions axisDefinitions;
-    if (!fScanner.scanFont(stream.get(), args.getCollectionIndex(),
-                            &name, &style, &isFixedPitch, &axisDefinitions))
-    {
+    Scanner::PaletteFromFont paletteFromFont;
+    uint16_t paletteIndex = args.getPaletteOverride().basePalette;
+    if (!fScanner.scanFont(stream.get(), args.getCollectionIndex(), paletteIndex,
+                           &name, &style, &isFixedPitch,
+                           &axisDefinitions, &paletteFromFont)) {
         return nullptr;
     }
 
@@ -249,8 +251,11 @@ sk_sp<SkTypeface> SkFontMgr_Custom::onMakeFromStreamArgs(std::unique_ptr<SkStrea
     SkAutoSTMalloc<4, SkFixed> axisValues(axisDefinitions.count());
     Scanner::computeAxisValues(axisDefinitions, position, axisValues, name);
 
+    auto newPalette = Scanner::resolvePaletteOverride(paletteFromFont, args.getPaletteOverride());
+
     auto data = std::make_unique<SkFontData>(std::move(stream), args.getCollectionIndex(),
-                                               axisValues.get(), axisDefinitions.count());
+                                             axisValues.get(), axisDefinitions.count(),
+                                             newPalette.data(), newPalette.size());
     return sk_sp<SkTypeface>(new SkTypeface_Stream(std::move(data), style, isFixedPitch, false, name));
 }
 

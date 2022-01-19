@@ -47,7 +47,8 @@ protected:
         : INHERITED(std::move(typeface), effects, desc)
     {}
 
-    void generateGlyphImage(FT_Face face, const SkGlyph& glyph, const SkMatrix& bitmapTransform);
+    void generateGlyphImage(FT_Face face, SkSpan<SkColor> customPalette,
+                            const SkGlyph& glyph, const SkMatrix& bitmapTransform);
     bool generateGlyphPath(FT_Face face, SkPath* path);
     bool generateFacePath(FT_Face face, SkGlyphID glyphID, SkPath* path);
 
@@ -80,10 +81,11 @@ public:
             SkFixed fMaximum;
         };
         using AxisDefinitions = SkSTArray<4, AxisDefinition, true>;
+        using PaletteFromFont = SkTArray<SkColor, true>;
         bool recognizedFont(SkStreamAsset* stream, int* numFonts) const;
-        bool scanFont(SkStreamAsset* stream, int ttcIndex,
+        bool scanFont(SkStreamAsset* stream, int ttcIndex, uint16_t paletteIndex,
                       SkString* name, SkFontStyle* style, bool* isFixedPitch,
-                      AxisDefinitions* axes) const;
+                      AxisDefinitions* axes, PaletteFromFont* palette) const;
         static void computeAxisValues(
             AxisDefinitions axisDefinitions,
             const SkFontArguments::VariationPosition position,
@@ -91,6 +93,11 @@ public:
             const SkString& name,
             const SkFontArguments::VariationPosition::Coordinate* currentPosition = nullptr);
         static bool GetAxes(FT_Face face, AxisDefinitions* axes);
+        static bool GetPalette(FT_Face face, uint16_t paletteIndex, PaletteFromFont* palette);
+
+        static std::vector<SkColor> resolvePaletteOverride(
+                PaletteFromFont paletteFromFont,
+                const SkFontArguments::PaletteOverride& paletteOverride);
 
     private:
         FT_Face openFace(SkStreamAsset* stream, int ttcIndex, FT_Stream ftStream) const;

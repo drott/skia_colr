@@ -1236,6 +1236,7 @@ bool colrv1_start_glyph_bounds(SkMatrix *ctm,
 
 void SkScalerContext_FreeType_Base::generateGlyphImage(
     FT_Face face,
+    SkSpan<SkColor> customPalette,
     const SkGlyph& glyph,
     const SkMatrix& bitmapTransform)
 {
@@ -1291,24 +1292,30 @@ void SkScalerContext_FreeType_Base::generateGlyphImage(
                     return;
                 }
 
+                SkSpan<SkColor> paletteSpan;
                 SkAutoTArray<SkColor> originalPalette;
 
-                FT_Color* ftPalette;
-                err = FT_Palette_Select(face, 0, &ftPalette);
-                if (err) {
-                    SK_TRACEFTR(err, "Could not get palette colors from %s fontFace.",
-                                face->family_name);
-                    return;
+                if (customPalette.size()) {
+                    paletteSpan = customPalette;
+                } else {
+                    FT_Color* ftPalette;
+                    err = FT_Palette_Select(face, 0, &ftPalette);
+                    if (err) {
+                        SK_TRACEFTR(err,
+                                    "Could not get palette colors from %s fontFace.",
+                                    face->family_name);
+                        return;
+                    }
+                    originalPalette.reset(palette_data.num_palette_entries);
+                    for (int i = 0; i < palette_data.num_palette_entries; ++i) {
+                        originalPalette[i] = SkColorSetARGB(ftPalette[i].alpha,
+                                                            ftPalette[i].red,
+                                                            ftPalette[i].green,
+                                                            ftPalette[i].blue);
+                    }
+                    paletteSpan = SkSpan<SkColor>(originalPalette.data(),
+                                                  palette_data.num_palette_entries);
                 }
-                originalPalette.reset(palette_data.num_palette_entries);
-                for (int i = 0; i < palette_data.num_palette_entries; ++i) {
-                    originalPalette[i] = SkColorSetARGB(ftPalette[i].alpha,
-                                                        ftPalette[i].red,
-                                                        ftPalette[i].green,
-                                                        ftPalette[i].blue);
-                }
-                SkSpan<SkColor> paletteSpan(originalPalette.data(),
-                                            palette_data.num_palette_entries);
 
                 FT_Bool haveLayers = false;
 

@@ -94,8 +94,8 @@ public:
         return this->makeStream();
     }
     std::unique_ptr<SkFontData> onMakeFontData() const override {
-        return std::make_unique<SkFontData>(this->makeStream(), fIndex,
-                                              fAxes.begin(), fAxes.count());
+        return std::make_unique<SkFontData>(
+                this->makeStream(), fIndex, fAxes.begin(), fAxes.count(), nullptr, 0);
     }
     sk_sp<SkTypeface> onMakeClone(const SkFontArguments& args) const override {
         std::unique_ptr<SkFontData> data = this->cloneFontData(args);
@@ -197,8 +197,9 @@ public:
             SkFontStyle style;
             bool isFixedWidth;
             Scanner::AxisDefinitions axisDefinitions;
-            if (!scanner.scanFont(stream.get(), ttcIndex,
-                                  &familyName, &style, &isFixedWidth, &axisDefinitions))
+            if (!scanner.scanFont(stream.get(), ttcIndex, 0,
+                                  &familyName, &style, &isFixedWidth,
+                                  &axisDefinitions, nullptr))
             {
                 SkDEBUGF("Requested font file %s exists, but is not a valid font.\n",
                          pathName.c_str());
@@ -445,10 +446,10 @@ protected:
         bool isFixedPitch;
         SkFontStyle style;
         SkString name;
-        if (!fScanner.scanFont(stream.get(), ttcIndex, &name, &style, &isFixedPitch, nullptr)) {
+        if (!fScanner.scanFont(stream.get(), ttcIndex, 0, &name, &style, &isFixedPitch, nullptr, nullptr)) {
             return nullptr;
         }
-        auto data = std::make_unique<SkFontData>(std::move(stream), ttcIndex, nullptr, 0);
+        auto data = std::make_unique<SkFontData>(std::move(stream), ttcIndex, nullptr, 0, nullptr, 0);
         return sk_sp<SkTypeface>(new SkTypeface_AndroidStream(std::move(data),
                                                               style, isFixedPitch, name));
     }
@@ -460,8 +461,10 @@ protected:
         SkFontStyle style;
         SkString name;
         Scanner::AxisDefinitions axisDefinitions;
-        if (!fScanner.scanFont(stream.get(), args.getCollectionIndex(),
-                               &name, &style, &isFixedPitch, &axisDefinitions))
+        Scanner::PaletteFromFont paletteFromFont;
+        uint16_t paletteIndex = args.getPaletteOverride().basePalette;
+        if (!fScanner.scanFont(stream.get(), args.getCollectionIndex(), paletteIndex,
+                               &name, &style, &isFixedPitch, &axisDefinitions, &paletteFromFont))
         {
             return nullptr;
         }
@@ -470,8 +473,10 @@ protected:
         Scanner::computeAxisValues(axisDefinitions, args.getVariationDesignPosition(),
                                    axisValues, name);
 
+        auto newPalette = Scanner::resolvePaletteOverride(paletteFromFont, args.getPaletteOverride());
         auto data = std::make_unique<SkFontData>(std::move(stream), args.getCollectionIndex(),
-                                                   axisValues.get(), axisDefinitions.count());
+                                                 axisValues.get(), axisDefinitions.count(),
+                                                 newPalette.data(), newPalette.size());
         return sk_sp<SkTypeface>(new SkTypeface_AndroidStream(std::move(data),
                                                               style, isFixedPitch, name));
     }

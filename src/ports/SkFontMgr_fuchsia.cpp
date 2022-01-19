@@ -208,8 +208,11 @@ sk_sp<SkTypeface> CreateTypefaceFromSkStream(std::unique_ptr<SkStreamAsset> stre
     SkFontStyle style;
     SkString name;
     Scanner::AxisDefinitions axisDefinitions;
-    if (!scanner.scanFont(stream.get(), args.getCollectionIndex(), &name, &style, &isFixedPitch,
-                          &axisDefinitions)) {
+    Scanner::PaletteFromFont paletteFromFont;
+    uint16_t paletteIndex = args.getPaletteOverride().basePalette;
+    if (!scanner.scanFont(stream.get(), args.getCollectionIndex(), palette_index,
+                          &name, &style, &isFixedPitch,
+                          &axisDefinitions, paletteFromFont)) {
         return nullptr;
     }
 
@@ -217,8 +220,11 @@ sk_sp<SkTypeface> CreateTypefaceFromSkStream(std::unique_ptr<SkStreamAsset> stre
     SkAutoSTMalloc<4, SkFixed> axisValues(axisDefinitions.count());
     Scanner::computeAxisValues(axisDefinitions, position, axisValues, name);
 
+    auto newPalette = Scanner::resolvePaletteOverride(paletteFromFont, args.getPaletteOverride());
+
     auto fontData = std::make_unique<SkFontData>(std::move(stream), args.getCollectionIndex(),
-                                                 axisValues.get(), axisDefinitions.count());
+                                                 axisValues.get(), axisDefinitions.count(),
+                                                 newPalette.data(), newPalette.size());
     return sk_make_sp<SkTypeface_Fuchsia>(std::move(fontData), style, isFixedPitch, name, id);
 }
 
