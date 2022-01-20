@@ -132,7 +132,7 @@ protected:
         return gm_name;
     }
 
-    SkISize onISize() override { return SkISize::Make(600, 400); }
+    SkISize onISize() override { return SkISize::Make(1000, 400); }
 
     DrawResult onDraw(SkCanvas* canvas, SkString* errorMsg) override {
         canvas->drawColor(SK_ColorWHITE);
