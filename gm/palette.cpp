@@ -120,7 +120,8 @@ protected:
         }
 
         fTypefaceDefault = MakeResourceAsTypeface(kColrCpalTestFontPath);
-        fTypefaceCloned = fTypefaceDefault->makeClone(paletteArguments);
+        fTypefaceCloned =
+                fTypefaceDefault ? fTypefaceDefault->makeClone(paletteArguments) : nullptr;
 
         fTypefaceFromStream = SkFontMgr::RefDefault()->makeFromStream(
                 GetResourceAsStream(kColrCpalTestFontPath), paletteArguments);
@@ -139,7 +140,7 @@ protected:
 
         canvas->translate(200, 20);
 
-        if (!fTypefaceCloned) {
+        if (!fTypefaceCloned || !fTypefaceFromStream) {
             *errorMsg = "Did not recognize COLR v1 test font format.";
             return DrawResult::kSkip;
         }
