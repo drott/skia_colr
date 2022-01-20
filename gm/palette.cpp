@@ -138,7 +138,7 @@ protected:
         canvas->drawColor(SK_ColorWHITE);
         SkPaint paint;
 
-        canvas->translate(200, 20);
+        canvas->translate(10, 20);
 
         if (!fTypefaceCloned || !fTypefaceFromStream) {
             *errorMsg = "Did not recognize COLR v1 test font format.";
@@ -162,7 +162,7 @@ protected:
             canvas->drawSimpleText(fGlyphs.data(),
                                    fGlyphs.size() * sizeof(uint16_t),
                                    SkTextEncoding::kGlyphID,
-                                   10,
+                                   0,
                                    y,
                                    defaultFont,
                                    paint);
