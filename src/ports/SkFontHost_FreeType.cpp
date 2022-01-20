@@ -2088,6 +2088,7 @@ bool SkTypeface_FreeType::Scanner::GetPalette(FT_Face face,
 
     palette->resize(0);
 
+#ifdef FT_COLOR_H
     FT_Palette_Data paletteData;
     if (FT_Palette_Data_Get(face, &paletteData)) {
         return true;
@@ -2106,6 +2107,7 @@ bool SkTypeface_FreeType::Scanner::GetPalette(FT_Face face,
                                         originalPalette[i].blue);
     }
 
+#endif
     return true;
 }
 
