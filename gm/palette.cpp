@@ -47,7 +47,7 @@ std::vector<SkFontArguments::PaletteOverride::ColorOverride> colorOverridesAll =
 std::vector<SkFontArguments::PaletteOverride::ColorOverride> colorOverridesOne = {
         {2, 0xff02dfe2},
 };
-}
+}  // namespace
 
 class FontPaletteGM : public GM {
 public:

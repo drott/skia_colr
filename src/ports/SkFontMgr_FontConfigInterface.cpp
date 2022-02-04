@@ -234,7 +234,7 @@ protected:
         SkString name;
         SkFontStyle style;
         bool isFixedPitch = false;
-        if (!fScanner.scanFont(stream.get(), ttcIndex,
+        if (!fScanner.scanFont(stream.get(), ttcIndex, 0,
                                &name, &style, &isFixedPitch, nullptr, nullptr)) {
             return nullptr;
         }
