@@ -31,7 +31,8 @@ struct SkFontArguments {
      * overriding existing palette entries. Not all palette entries have to be
      * specified. Specifying more overrides than what the font has in its
      * palettes or specifying color indices outside the number of entries in a
-     * palette will not have any effect. */
+     * palette will not have any effect. Later override entries override earlier
+     * ones. */
     struct PaletteOverride {
         struct ColorOverride {
             uint16_t colorIndex;
