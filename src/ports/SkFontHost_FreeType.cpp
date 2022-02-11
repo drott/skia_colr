@@ -2198,10 +2198,6 @@ std::vector<SkColor> SkTypeface_FreeType::Scanner::resolvePaletteOverride(
 
   newPalette.resize(paletteFromFont.size());
 
-  if (paletteOverride.colorOverrideCount > static_cast<uint16_t>(paletteFromFont.size())) {
-      return {};
-  }
-
   for (size_t i = 0; i < paletteFromFont.size(); ++i) {
       newPalette[i] = paletteFromFont[i];
   }
