@@ -67,8 +67,8 @@ private:
                 bool isFixedPitch;
                 SkString realname;
                 SkFontStyle style = SkFontStyle(); // avoid uninitialized warning
-                if (!scanner.scanFont(stream.get(), faceIndex,
-                                      &realname, &style, &isFixedPitch, nullptr))
+                if (!scanner.scanFont(stream.get(), faceIndex, &realname, &style, &isFixedPitch,
+                                      nullptr, nullptr, nullptr))
                 {
                     // SkDebugf("---- failed to open <%s> <%d> as a font\n",
                     //          filename.c_str(), faceIndex);
