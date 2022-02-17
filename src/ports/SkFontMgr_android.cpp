@@ -200,7 +200,7 @@ public:
             Scanner::AxisDefinitions axisDefinitions;
             if (!scanner.scanFont(stream.get(), ttcIndex,
                                   &familyName, &style, &isFixedWidth,
-                                  &axisDefinitions, nullptr, nullptr))
+                                  &axisDefinitions))
             {
                 SkDEBUGF("Requested font file %s exists, but is not a valid font.\n",
                          pathName.c_str());
@@ -447,8 +447,7 @@ protected:
         bool isFixedPitch;
         SkFontStyle style;
         SkString name;
-        if (!fScanner.scanFont(stream.get(), ttcIndex, &name, &style, &isFixedPitch,
-                               nullptr, nullptr, nullptr)) {
+        if (!fScanner.scanFont(stream.get(), ttcIndex, &name, &style, &isFixedPitch, nullptr)) {
             return nullptr;
         }
         auto data = std::make_unique<SkFontData>(std::move(stream), ttcIndex, 0,
@@ -465,8 +464,7 @@ protected:
         SkString name;
         Scanner::AxisDefinitions axisDefinitions;
         if (!fScanner.scanFont(stream.get(), args.getCollectionIndex(),
-                               &name, &style, &isFixedPitch,
-                               &axisDefinitions, nullptr, nullptr))
+                               &name, &style, &isFixedPitch, &axisDefinitions))
         {
             return nullptr;
         }

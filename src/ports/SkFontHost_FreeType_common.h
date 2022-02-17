@@ -88,8 +88,7 @@ public:
         bool recognizedFont(SkStreamAsset* stream, int* numFonts) const;
         bool scanFont(SkStreamAsset* stream, int ttcIndex,
                       SkString* name, SkFontStyle* style, bool* isFixedPitch,
-                      AxisDefinitions* axes,
-                      int* paletteCount, int* paletteEntryCount) const;
+                      AxisDefinitions* axes) const;
         static void computeAxisValues(
             AxisDefinitions axisDefinitions,
             const SkFontArguments::VariationPosition position,

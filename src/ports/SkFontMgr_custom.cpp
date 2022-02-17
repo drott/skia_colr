@@ -245,8 +245,7 @@ sk_sp<SkTypeface> SkFontMgr_Custom::onMakeFromStreamArgs(std::unique_ptr<SkStrea
     SkString name;
     Scanner::AxisDefinitions axisDefinitions;
     if (!fScanner.scanFont(stream.get(), args.getCollectionIndex(),
-                           &name, &style, &isFixedPitch,
-                           &axisDefinitions, nullptr, nullptr)) {
+                           &name, &style, &isFixedPitch, &axisDefinitions)) {
         return nullptr;
     }
 

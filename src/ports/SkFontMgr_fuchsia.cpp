@@ -209,8 +209,7 @@ sk_sp<SkTypeface> CreateTypefaceFromSkStream(std::unique_ptr<SkStreamAsset> stre
     SkString name;
     Scanner::AxisDefinitions axisDefinitions;
     if (!scanner.scanFont(stream.get(), args.getCollectionIndex(),
-                          &name, &style, &isFixedPitch,
-                          &axisDefinitions, nullptr, nullptr)) {
+                          &name, &style, &isFixedPitch, &axisDefinitions)) {
         return nullptr;
     }
 

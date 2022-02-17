@@ -88,7 +88,7 @@ static void load_font_from_data(const SkTypeface_FreeType::Scanner& scanner,
         SkString realname;
         SkFontStyle style = SkFontStyle(); // avoid uninitialized warning
         if (!scanner.scanFont(stream.get(), faceIndex, &realname, &style, &isFixedPitch,
-                              nullptr, nullptr, nullptr))
+                              nullptr))
         {
             SkDebugf("---- failed to open <%d> <%d> as a font\n", index, faceIndex);
             return;

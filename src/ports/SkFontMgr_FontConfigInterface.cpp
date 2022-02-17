@@ -237,8 +237,7 @@ protected:
         SkString name;
         SkFontStyle style;
         bool isFixedPitch = false;
-        if (!fScanner.scanFont(stream.get(), ttcIndex, &name, &style, &isFixedPitch,
-                               nullptr, nullptr, nullptr)) {
+        if (!fScanner.scanFont(stream.get(), ttcIndex, &name, &style, &isFixedPitch, nullptr)) {
             return nullptr;
         }
 
@@ -264,8 +263,7 @@ protected:
         bool isFixedPitch = false;
         Scanner::AxisDefinitions axisDefinitions;
         if (!fScanner.scanFont(stream.get(), args.getCollectionIndex(),
-                               &name, &style, &isFixedPitch,
-                               &axisDefinitions, nullptr, nullptr))
+                               &name, &style, &isFixedPitch, &axisDefinitions))
         {
             return nullptr;
         }

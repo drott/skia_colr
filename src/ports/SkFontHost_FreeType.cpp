@@ -1949,8 +1949,7 @@ bool SkTypeface_FreeType::Scanner::recognizedFont(SkStreamAsset* stream, int* nu
 bool SkTypeface_FreeType::Scanner::scanFont(
     SkStreamAsset* stream, int ttcIndex,
     SkString* name, SkFontStyle* style, bool* isFixedPitch,
-    AxisDefinitions* axes,
-    int* paletteCount, int* paletteEntryCount) const
+    AxisDefinitions* axes) const
 {
     SkAutoMutexExclusive libraryLock(fLibraryMutex);
 
@@ -2100,29 +2099,6 @@ bool SkTypeface_FreeType::Scanner::scanFont(
     if (axes != nullptr && !GetAxes(face.get(), axes)) {
         return false;
     }
-
-#ifdef FT_COLOR_H
-    if (paletteCount || paletteEntryCount) {
-        FT_Palette_Data paletteData;
-        if (FT_Palette_Data_Get(face.get(), &paletteData)) {
-            paletteData.num_palettes = 0;
-            paletteData.num_palette_entries = 0;
-        }
-        if (paletteCount) {
-            *paletteCount = paletteData.num_palettes;
-        }
-        if (paletteEntryCount) {
-            *paletteEntryCount = paletteData.num_palette_entries;
-        }
-    }
-#else
-    if (paletteCount) {
-        *paletteCount = 0;
-    }
-    if (paletteEntryCount) {
-        *paletteEntryCount = 0;
-    }
-#endif
 
     return true;
 }
