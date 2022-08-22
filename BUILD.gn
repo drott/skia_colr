@@ -3379,6 +3379,11 @@ if (skia_enable_tools) {
       sources = [ "fuzz/oss_fuzz/FuzzSKP.cpp" ]
       deps = []
     }
+
+    libfuzzer_app("colrv1") {
+      sources = [ "fuzz/oss_fuzz/FuzzCOLRv1.cpp" ]
+      deps = []
+    }
   }
 }
 

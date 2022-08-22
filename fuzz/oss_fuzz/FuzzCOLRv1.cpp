@@ -27,6 +27,8 @@ void FuzzCOLRv1(sk_sp<SkData> bytes) {
         return;
     }
 
+    // Place at a baseline in the lower part of the canvas square, but canvas size and baseline
+    // placement are chosen arbitraly and we just need to cover colrv1 rendering in this fuzz test.
     SkFont colrv1Font = SkFont(typeface, 120);
     SkCanvas* canvas = s->getCanvas();
     SkPaint paint;
@@ -42,7 +44,10 @@ void FuzzCOLRv1(sk_sp<SkData> bytes) {
 
 #if defined(SK_BUILD_FOR_LIBFUZZER)
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-    if (size > 5 * 1024) {
+    // COLRv1 corpus file sizes range from 8k for a smalle test glyph file to about 80k covering
+    // most of the complex Noto Emoji glyphs, compare:
+    // See https://github.com/googlefonts/color-fonts/blob/main/rebuild_fuzzer_corpus.py
+    if (size > 80 * 1024) {
         return 0;
     }
     auto bytes = SkData::MakeWithoutCopy(data, size);
